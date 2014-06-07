@@ -28,6 +28,8 @@ class Mailbox():
 
     def __init__(self,domains=[]):
 
+        self.domains = domains
+
         self.mailboxes = defaultdict(int)
         self.sentfrom = defaultdict(int)
         self.received = defaultdict(int)
@@ -46,9 +48,26 @@ class Mailbox():
             self.received[toaddr] += 1
             self.totalletters += 1
 
+            if self.is_local(fromaddr):
+                print fromaddr
+
     def __repr__(self):
         return "Total letters: %s\n" % (self.totalletters)
 
+    def is_local(self, addr):
+        #(name, domain, junk) = addr.split('@')
+        domain = None
+        try:
+            if addr.index('@'):
+                name, domain  = addr.split('@')
+        except:
+            pass
+            #print "ERRORR!!!" + addr
+
+        for d in self.domains:
+            if domain == d:
+                return 1
+        return 0
 
     def threads(self):
 
