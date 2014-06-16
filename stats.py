@@ -10,6 +10,7 @@ import MySQLdb
 from datetime import datetime
 from calendar import timegm
 
+from statistics import median
 
 DB_HOST = "95.85.22.116"
 DB_USER = "replytimes"
