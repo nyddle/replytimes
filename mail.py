@@ -38,11 +38,15 @@ class Mailbox():
         self.received = defaultdict(int)
         self.receivedfrom = defaultdict(int)
         self.totalletters = 0
+        self.totalsent = 0
+        self.totalreceived = 0
 
         db = self.getdb()
         db.query("""SELECT fromaddr, toaddr, TIMESTAMP(datetime), is_question, msgid, replyto_msgid FROM message""")
         r=db.store_result()
         self.data = r.fetch_row(1000000)
+
+        self.filter_data()
 
         for letter in self.data:
             #db.query("""SELECT fromaddr, toaddr, TIMESTAMP(datetime), is_question, msgid, replyto_msgid FROM message""")
@@ -54,8 +58,19 @@ class Mailbox():
             if self.is_local(fromaddr):
                 print fromaddr
 
+    def filter_data(self):
+
+        tmp_data = []
+
+        for letter in self.data:
+
+
+        return self.data
+
     def __repr__(self):
-        return "Total letters: %s\n" % (self.totalletters)
+        return "Total letters: %s\n" % (self.totalletters) + \
+               "Sent letters: %s\n" % (self.totalsent) + \
+               "Received letters: %s\n" % (self.totalreceived)
 
     def is_local(self, addr):
         #(name, domain, junk) = addr.split('@')
@@ -75,7 +90,6 @@ class Mailbox():
     def threads(self):
 
         threads = {}
-
         for letter in self.data:
 
             #db.query("""SELECT fromaddr, toaddr, TIMESTAMP(datetime), is_question, msgid, replyto_msgid FROM message""")
@@ -118,13 +132,8 @@ class Mailbox():
 
 
         data = r.fetch_row(100000)
-
-        #print data
-
         sorted_data = sorted(data, key = lambda el: el[2])
 
-
-        #print data
 
         for letter in sorted_data:
 
@@ -157,7 +166,9 @@ class Mailbox():
 
 if (__name__ == "__main__"):
 
-    mailbox = Mailbox(['tellur.com.ua'])
+    #mailbox = Mailbox(['tellur.com.ua'], filters=['inbound'])
+    mailbox = Mailbox()
     print mailbox
 
 
+#
