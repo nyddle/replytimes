@@ -9,16 +9,19 @@ def filter_letters(slist, rlist, data):
     for letter in data:
         (s, r) = letter[0], letter[1]
 
-        for rcpt in slist:
-            print "sender: %s, receiver: %r\n" % (s, r)
-        res.append(letter)
+        if filter_address(s, slist) and filter_address(r, rlist):
+            res.append(letter)
 
+    return res
 
 
 def filter_address(address, filters):
 
     addresses = [ l for l in filters if l.find('@') > -1 ]
     regexes = [ l for l in filters if l.find('@') == -1 ]
+
+    if len(filters) == 0:
+        return 1
 
     if address in addresses:
         return 1
@@ -43,17 +46,11 @@ if (__name__ == "__main__"):
 
     #filters = [ 'inbound', 'outbound', recipients_list  ]
 
-    sender = [ 'info@1c.ru' ]
-    receiver = [ 'infomail1c@tellur.dp.ua', 'tellur.com.ua' ]
+    sender = [  ]
+    receiver = [ 'infomail1c@tellur.dp.ua', 'tellur.com.ua', 'rambler.ru' ]
 
-    #filter(sender, receiver, data)
-
-    rs = [ l for l in receiver if l.find('@') > 0 ]
-    rs = [ l for l in receiver if l.find('@') == 0 ]
-
-    print rs
-
-
+    for s in filter_letters(sender, receiver, data):
+        print s
 
     print filter_address('nyddle@gmail.com', [ 'gmail.com' ])
 

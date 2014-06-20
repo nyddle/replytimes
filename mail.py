@@ -12,6 +12,8 @@ from collections import defaultdict
 
 from statistics import median
 
+from filters import filter_address, filter_letters
+
 
 DB_HOST = "95.85.22.116"
 DB_USER = "replytimes"
@@ -61,9 +63,6 @@ class Mailbox():
     def filter_data(self):
 
         tmp_data = []
-
-        for letter in self.data:
-
 
         return self.data
 
