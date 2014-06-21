@@ -3,6 +3,7 @@
 import datetime
 
 
+#TODO: add EXCLUDE option
 def filter_letters(slist, rlist, data):
 
     res = []
