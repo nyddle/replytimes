@@ -54,24 +54,18 @@ class Mailbox():
             self.data = letters
         else:
             db = self.getdb()
-            db.query("""SELECT fromaddr, toaddr, TIMESTAMP(datetime), is_question, msgid, replyto_msgid FROM message""")
+            db.query("""SELECT fromaddr, toaddr, subj, TIMESTAMP(datetime), is_question, msgid, replyto_msgid FROM message""")
             r=db.store_result()
             self.data = r.fetch_row(1000000)
             self.data = uniq(self.data)
-            for row in self.data:
-                print row
-
-        self.filter_data()
 
         for letter in self.data:
             #db.query("""SELECT fromaddr, toaddr, TIMESTAMP(datetime), is_question, msgid, replyto_msgid FROM message""")
-            (fromaddr, toaddr, when, is_question, msgid, replyto_msgid) = letter
+            (fromaddr, toaddr, subj, when, is_question, msgid, replyto_msgid) = letter
             self.sentfrom[fromaddr] += 1
             self.received[toaddr] += 1
             self.totalletters += 1
 
-            if self.is_local(fromaddr):
-                print fromaddr
 
     def filter_data(self):
 
@@ -106,7 +100,7 @@ class Mailbox():
         for letter in self.data:
 
             #db.query("""SELECT fromaddr, toaddr, TIMESTAMP(datetime), is_question, msgid, replyto_msgid FROM message""")
-            (fromaddr, toaddr, when, is_question, msgid, replyto_msgid) = letter
+            (fromaddr, toaddr, subj, when, is_question, msgid, replyto_msgid) = letter
 
             if not replyto_msgid:
                 #print letter
