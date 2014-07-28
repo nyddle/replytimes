@@ -49,6 +49,7 @@ class Mailbox():
         self.totalletters = 0
         self.totalsent = 0
         self.totalreceived = 0
+        self.uniques = {}
 
         if letters:
             self.data = letters
@@ -62,16 +63,24 @@ class Mailbox():
         for letter in self.data:
             #db.query("""SELECT fromaddr, toaddr, TIMESTAMP(datetime), is_question, msgid, replyto_msgid FROM message""")
             (fromaddr, toaddr, subj, when, is_question, msgid, replyto_msgid) = letter
+
             self.sentfrom[fromaddr] += 1
             self.received[toaddr] += 1
             self.totalletters += 1
 
+        self.data = self.filter_data()
+
 
     def filter_data(self):
 
-        tmp_data = []
-
-        return self.data
+        tmp = []
+        for letter in self.data:
+            (fromaddr, toaddr, subj, when, is_question, msgid, replyto_msgid) = letter
+            unique_key = fromaddr + toaddr + msgid + replyto_msgid
+            if unique_key not in self.uniques:
+                tmp.append(letter)
+            self.uniques[ unique_key ] = 1
+        return tmp
 
     def __repr__(self):
         return "Total letters: %s\n" % (self.totalletters) + \
