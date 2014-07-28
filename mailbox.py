@@ -50,35 +50,38 @@ class Mailbox():
         self.totalletters = 0
         self.totalsent = 0
         self.totalreceived = 0
+        self.uniques = {}
 
         if letters:
             self.data = letters
         else:
             db = self.getdb()
-            db.query("""SELECT fromaddr, toaddr, TIMESTAMP(datetime), is_question, msgid, replyto_msgid FROM message""")
+            db.query("""SELECT fromaddr, toaddr, subj, TIMESTAMP(datetime), is_question, msgid, replyto_msgid FROM message""")
             r=db.store_result()
             self.data = r.fetch_row(1000000)
             self.data = uniq(self.data)
-            for row in self.data:
-                print row
-
-        self.filter_data()
 
         for letter in self.data:
             #db.query("""SELECT fromaddr, toaddr, TIMESTAMP(datetime), is_question, msgid, replyto_msgid FROM message""")
-            (fromaddr, toaddr, when, is_question, msgid, replyto_msgid) = letter
+            (fromaddr, toaddr, subj, when, is_question, msgid, replyto_msgid) = letter
+
             self.sentfrom[fromaddr] += 1
             self.received[toaddr] += 1
             self.totalletters += 1
 
-            if self.is_local(fromaddr):
-                print fromaddr
+        self.data = self.filter_data()
+
 
     def filter_data(self):
 
-        tmp_data = []
-
-        return self.data
+        tmp = []
+        for letter in self.data:
+            (fromaddr, toaddr, subj, when, is_question, msgid, replyto_msgid) = letter
+            unique_key = fromaddr + toaddr + msgid + replyto_msgid
+            if unique_key not in self.uniques:
+                tmp.append(letter)
+            self.uniques[ unique_key ] = 1
+        return tmp
 
     def __repr__(self):
         return "Total letters: %s\n" % (self.totalletters) + \
@@ -111,7 +114,7 @@ class Mailbox():
         for letter in self.data:
 
             #db.query("""SELECT fromaddr, toaddr, TIMESTAMP(datetime), is_question, msgid, replyto_msgid FROM message""")
-            (fromaddr, toaddr, when, is_question, msgid, replyto_msgid) = letter
+            (fromaddr, toaddr, subj, when, is_question, msgid, replyto_msgid) = letter
 
             if not replyto_msgid:
                 #print letter
