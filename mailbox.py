@@ -145,7 +145,7 @@ class Mailbox():
         for letter in self.data:
 
             #db.query("""SELECT fromaddr, toaddr, TIMESTAMP(datetime), is_question, msgid, replyto_msgid FROM message""")
-            (fromaddr, toaddr, when, is_question, msgid, replyto_msgid) = letter
+            (fromaddr, toaddr, subj, when, is_question, msgid, replyto_msgid) = letter
 
             if not replyto_msgid:
                 #print letter
@@ -176,7 +176,7 @@ class Mailbox():
         for letter in self.data:
 
             #db.query("""SELECT fromaddr, toaddr, TIMESTAMP(datetime), is_question, msgid, replyto_msgid FROM message""")
-            (fromaddr, toaddr, when, is_question, msgid, replyto_msgid) = letter
+            (fromaddr, toaddr, subj, when, is_question, msgid, replyto_msgid) = letter
 
             if not replyto_msgid:
                 #print letter
@@ -190,7 +190,7 @@ class Mailbox():
 
                 if replyto_msgid in threads:
                     if self.is_local( fromaddr ) and self.is_local( toaddr ):
-                        users[ fromaddr ].append( ( when - threads[ replyto_msgid ][ -1 ][ 2 ] ).seconds )
+                        users[ fromaddr ].append( ( when - threads[ replyto_msgid ][ -1 ][ 3 ] ).seconds )
 
                 threads[replyto_msgid].append(letter)
                 threads[msgid] = threads[replyto_msgid]
@@ -211,7 +211,7 @@ class Mailbox():
         for letter in self.data:
 
             #db.query("""SELECT fromaddr, toaddr, TIMESTAMP(datetime), is_question, msgid, replyto_msgid FROM message""")
-            (fromaddr, toaddr, when, is_question, msgid, replyto_msgid) = letter
+            (fromaddr, toaddr, subj, when, is_question, msgid, replyto_msgid) = letter
 
             if not replyto_msgid:
                 #print letter
@@ -225,7 +225,7 @@ class Mailbox():
 
                 if replyto_msgid in threads:
                     if self.is_local( fromaddr ) and not self.is_local( toaddr ):
-                        users[ fromaddr ].append( ( when - threads[ replyto_msgid ][ -1 ][ 2 ] ).seconds )
+                        users[ fromaddr ].append( ( when - threads[ replyto_msgid ][ -1 ][ 3 ] ).seconds )
 
                 threads[replyto_msgid].append(letter)
                 threads[msgid] = threads[replyto_msgid]
