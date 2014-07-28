@@ -6,6 +6,7 @@ import re
 import imaplib
 import pytz
 import time
+import json
 import MySQLdb
 from datetime import datetime
 from calendar import timegm
@@ -83,7 +84,11 @@ class Mailbox():
         return "Total letters: %s\n" % (self.totalletters) + \
                "Sent letters: %s\n" % (self.totalsent) + \
                "Received letters: %s\n" % (self.totalreceived) +\
-               "Threads: %s\n" % (len(self.threads().keys()))
+               "Threads: %s\n" % (len(self.threads().keys())) +\
+               "Threads_gte2: %s\n" % (len(self.threads_more2().keys())) +\
+               "ReplyTimes: %s\n" % json.dumps( self.outer_times(), indent = 4 ) +\
+               "ReplyTimes: %s\n" % str( self.local_times() )
+
 
     def is_local(self, addr):
         #(name, domain, junk) = addr.split('@')
@@ -124,13 +129,113 @@ class Mailbox():
             else:
 
                 print "Smth. weird!\n"
-                print letter
+# print letter
 
                 threads[msgid] = []
                 threads[msgid].append(letter)
 
         return threads
+    
+    def threads_more2(self):
 
+        threads = {}
+        for letter in self.data:
+
+            #db.query("""SELECT fromaddr, toaddr, TIMESTAMP(datetime), is_question, msgid, replyto_msgid FROM message""")
+            (fromaddr, toaddr, when, is_question, msgid, replyto_msgid) = letter
+
+            if not replyto_msgid:
+                #print letter
+                threads[msgid] = []
+                threads[msgid].append(letter)
+
+            elif replyto_msgid in threads:
+
+                if msgid in threads:
+                    raise "Msgid exists!!!11"
+
+                threads[replyto_msgid].append(letter)
+                threads[msgid] = threads[replyto_msgid]
+                del threads[replyto_msgid]
+            else:
+
+                print "Smth. weird!\n"
+# print letter
+
+                threads[msgid] = []
+                threads[msgid].append(letter)
+
+        return dict( filter( lambda ( msgid, letters ): len( letters ) > 1, threads.iteritems() ) )
+
+    def local_times(self):
+        users = defaultdict( list )
+        threads = {}
+        for letter in self.data:
+
+            #db.query("""SELECT fromaddr, toaddr, TIMESTAMP(datetime), is_question, msgid, replyto_msgid FROM message""")
+            (fromaddr, toaddr, when, is_question, msgid, replyto_msgid) = letter
+
+            if not replyto_msgid:
+                #print letter
+                threads[msgid] = []
+                threads[msgid].append(letter)
+
+            elif replyto_msgid in threads:
+
+                if msgid in threads:
+                    raise "Msgid exists!!!11"
+
+                if replyto_msgid in threads:
+                    if self.is_local( fromaddr ) and self.is_local( toaddr ):
+                        users[ fromaddr ].append( ( when - threads[ replyto_msgid ][ -1 ][ 2 ] ).seconds )
+
+                threads[replyto_msgid].append(letter)
+                threads[msgid] = threads[replyto_msgid]
+                del threads[replyto_msgid]
+            else:
+
+                print "Smth. weird!\n"
+                print letter
+
+                threads[msgid] = []
+                threads[msgid].append(letter)
+
+        return users
+
+    def outer_times(self):
+        users = defaultdict( list )
+        threads = {}
+        for letter in self.data:
+
+            #db.query("""SELECT fromaddr, toaddr, TIMESTAMP(datetime), is_question, msgid, replyto_msgid FROM message""")
+            (fromaddr, toaddr, when, is_question, msgid, replyto_msgid) = letter
+
+            if not replyto_msgid:
+                #print letter
+                threads[msgid] = []
+                threads[msgid].append(letter)
+
+            elif replyto_msgid in threads:
+
+                if msgid in threads:
+                    raise "Msgid exists!!!11"
+
+                if replyto_msgid in threads:
+                    if self.is_local( fromaddr ) and not self.is_local( toaddr ):
+                        users[ fromaddr ].append( ( when - threads[ replyto_msgid ][ -1 ][ 2 ] ).seconds )
+
+                threads[replyto_msgid].append(letter)
+                threads[msgid] = threads[replyto_msgid]
+                del threads[replyto_msgid]
+            else:
+
+                print "Smth. weird!\n"
+                print letter
+
+                threads[msgid] = []
+                threads[msgid].append(letter)
+
+        return users
 
     def getdb(self):
         return MySQLdb.connect( host = DB_HOST, user = DB_USER, passwd = DB_PASSWORD, db = DB_BASE, charset = DB_CHARSET, connect_timeout = 10 )
@@ -180,7 +285,7 @@ class Mailbox():
 if (__name__ == "__main__"):
 
     #mailbox = Mailbox(['tellur.com.ua'], filters=['inbound'])
-    mailbox = Mailbox()
+    mailbox = Mailbox( [ "tellur.dp.ua", "tellur.com.ua" ] )
     print mailbox
 
     """
